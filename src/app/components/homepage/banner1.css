@@ -1,0 +1,20 @@
+@media screen and (max-width:650px) {
+    .delivery_div {
+        width: 60%;
+    }
+    .smallhero_section{
+        height: 50%;
+        border-radius: 0;
+    }
+    .main_footer{
+        display: none;
+    }
+    .small_footer{
+        display: block;
+    }
+    .input_container{
+        width: 100%;
+    }
+    
+}
+
