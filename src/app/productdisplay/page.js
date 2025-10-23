@@ -9,7 +9,7 @@ import axiosInstance from "../helper/axiosInstance";
 import { Search, X, Heart, ShoppingCart } from "lucide-react"; 
 import Navbar from "../components/navbar/page";
 import Footer from "../components/footer/page";
-const BACKEND_URL = "https://api.digiente.com";
+const BACKEND_URL = "http://localhost:5000";
 
 const ProductDisplay = () => {
   const router = useRouter();

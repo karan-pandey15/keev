@@ -3,9 +3,15 @@ import React, { useState } from "react";
 import "./banner1.css";
 
 const options = [
-   "Bed"
+   
+  "Ristal 0.8mm",
+  "Ristal Door Skin",
+  "Ristal 1mm",
+  "Adalam",
+  "Membrane Door",
+  "Laminate Door",
+  "Fevicol"
 ];
-
 const Banner1 = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -22,12 +28,29 @@ const Banner1 = () => {
   const handleOptionClick = (option) => {
     console.log("Navigating to", option);
     // Here, you can navigate to the respective page using Next.js routing
-    switch (option) {
-      case "Bed":
-        window.location.href = "/";
+    switch (option) { 
+         case "Ristal 0.8mm":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Ristal%200.8mm";
         break;
-    
-          
+         case "Ristal Door Skin":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Ristal%20Door%20Skin";
+        break;
+         case "Ristal 1mm":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Ristal%201mm";
+        break;
+         case "Adalam":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Adalam";
+        break;
+         case "Membrane Door":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Membrane%20Door";
+        break;
+           case "Laminate Door":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Laminate%20Door";
+        break;
+           case "Fevicol":
+        window.location.href = "https://mamtahardware.in/ristalmica?category=Fevicol";
+         break;
+        
       default:
         break;
     }

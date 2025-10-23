@@ -7,7 +7,7 @@ import { addToCart, updateQuantity, toggleFavorite, selectFavoriteIds } from "..
 import { useToast } from "../components/Toast";
 import { ChevronLeft, ChevronRight, Heart, Share2, ShoppingCart } from "lucide-react";
 
-const BACKEND_URL = "https://api.digiente.com";
+const BACKEND_URL = "http://localhost:5000";
 
 const ProductCarousel = ({ products, title = "Trending Products" }) => {
   const router = useRouter();

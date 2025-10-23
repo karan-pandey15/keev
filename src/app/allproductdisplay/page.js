@@ -7,7 +7,7 @@ import { addToCart, updateQuantity, toggleFavorite, selectFavoriteIds } from "..
 import { useToast } from "../components/Toast";
 import axiosInstance from "../helper/axiosInstance"; 
 import { Search, X, Heart, ShoppingCart } from "lucide-react"; 
-const BACKEND_URL = "https://api.digiente.com";
+const BACKEND_URL = "http://localhost:5000";
 
 const AllProductDisplay = () => {
   const router = useRouter();

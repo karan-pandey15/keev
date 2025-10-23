@@ -8,9 +8,8 @@ import { useToast } from "../components/Toast";
 import axiosInstance from "../helper/axiosInstance";
 import Navbar from "../components/navbar/page";
 import { Search, X } from "lucide-react";
-import Footer from "../components/footer/page";
-
-const BACKEND_URL = "https://api.digiente.com";
+import Footer from "../components/footer/page"; 
+const BACKEND_URL = "http://localhost:50001";
 
 const RistalMica = () => {
   const router = useRouter();
@@ -41,8 +40,7 @@ const RistalMica = () => {
       console.error("Failed to fetch products:", err);
       toast.error("Failed to load products");
     }
-  };
-
+  }; 
   useEffect(() => {
     // ✅ Only run this effect on the client
     if (!searchParams) return;
@@ -361,6 +359,8 @@ const RistalMica = () => {
           </div>
         )}
       </main>
+
+      <div className="h-20 w-100    " >  </div>
 
       <Footer />
     </div>

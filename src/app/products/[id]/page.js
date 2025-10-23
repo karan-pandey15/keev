@@ -5,19 +5,21 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { addToCart } from "@/app/store/cartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart, toggleFavorite, selectFavoriteIds } from "@/app/store/cartSlice";
 import Navbar from "@/app/components/navbar/page";
 import axiosInstance from "@/app/helper/axiosInstance";
 import toast, { Toaster } from "react-hot-toast";
 import Footer from "@/app/components/footer/page";
+import { Heart, Share2 } from "lucide-react";
 
-const BACKEND_URL = "https://api.digiente.com"; 
+const BACKEND_URL = "https://api.mamtahardware.in"; 
 
 const ProductDetail = () => {
   const params = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
+  const favoriteIds = useSelector(selectFavoriteIds);
   const productId = params?.id;
 
   const [product, setProduct] = useState(null);
@@ -25,15 +27,21 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  const isFavorite = favoriteIds.includes(productId);
+
   // ✅ Fetch single product by ID
   const fetchProduct = async () => {
     try {
-      const res = await axiosInstance.get("/sunmica"); // Or `/sunmica/${productId}` if endpoint exists
-      // Find product by ID
+      const res = await axiosInstance.get("/sunmica");
       const foundProduct = res.data.find((p) => p._id === productId);
+      if (!foundProduct) {
+        setProduct(null);
+        setSelectedImage("");
+        return;
+      }
       setProduct(foundProduct);
       setSelectedImage(
-        foundProduct?.images?.[0]
+        foundProduct.images?.[0]
           ? `${BACKEND_URL}/${foundProduct.images[0].replace(/\\/g, "/")}`
           : ""
       );
@@ -54,7 +62,6 @@ const ProductDetail = () => {
     try {
       setLoading(true);
 
-      // Add to cart using Redux
       dispatch(
         addToCart({
           id: product._id,
@@ -74,6 +81,60 @@ const ProductDetail = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToggleFavorite = () => {
+    if (!product) return;
+
+    const imageUrl = `${BACKEND_URL}/${product.images?.[0]?.replace(/\\/g, "/")}`;
+    dispatch(
+      toggleFavorite({
+        id: product._id,
+        name: product.name,
+        description: product.description,
+        image: imageUrl,
+        points: product.points,
+        category: product.category,
+      })
+    );
+
+    if (isFavorite) {
+      toast.success("Removed from favorites");
+    } else {
+      toast.success("Added to favorites ❤️");
+    }
+  };
+
+  const handleShare = async () => {
+    if (!product) return;
+    if (typeof window === "undefined") return;
+
+    const shareUrl = `${window.location.origin}/products/${product._id}`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: product.description,
+          url: shareUrl,
+        });
+        toast.success("Shared successfully!");
+      } catch (err) {
+        console.log("Error sharing:", err);
+      }
+      return;
+    }
+
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+        return;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    toast.error("Sharing not supported on this device");
   };
 
   if (!product) return <p className="text-center mt-20">Loading...</p>;
@@ -155,6 +216,23 @@ const ProductDetail = () => {
                   priority
                   unoptimized
                 />
+                <button
+                  onClick={handleToggleFavorite}
+                  className="absolute top-5 right-6 text-gray-500 hover:text-red-500 transition-transform duration-200"
+                >
+                  <Heart
+                    className={`h-8 w-8 ${
+                      isFavorite ? "fill-red-500 text-red-500" : "text-current"
+                    }`}
+                  />
+                </button>
+
+                {isFavorite && (
+                  <div className="absolute top-4 left-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2">
+                    <Heart className="w-4 h-4 fill-current" />
+                    <span>Loved</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -186,18 +264,43 @@ const ProductDetail = () => {
             </div>
 
             <div className="pt-4">
-              <button
-                onClick={handleEarnPoints}
-                disabled={loading}
-                className="w-full lg:w-auto inline-flex items-center justify-center space-x-3 bg-[#047F05] hover:bg-[#036804] text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span>
-                  {loading
-                    ? "Processing..."
-                    : `Earn ${product.points * quantity} Points`}
-                </span>
-              </button>
-          
+              <div className="flex flex-col gap-6">
+                <button
+                  onClick={handleEarnPoints}
+                  disabled={loading}
+                  className="w-full inline-flex items-center justify-center gap-3 bg-[#047F05] hover:bg-[#036804] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>
+                    {loading
+                      ? "Processing..."
+                      : `Earn ${product.points * quantity} Points`}
+                  </span>
+                </button>
+                <div className="flex flex-row items-center gap-6">
+                  <button
+                    onClick={handleToggleFavorite}
+                    className={`inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-semibold text-lg transition-all shadow-lg hover:shadow-2xl border ${
+                      isFavorite
+                        ? "bg-white text-red-500 border-red-200 hover:border-red-300"
+                        : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <Heart
+                      className={`h-6 w-6 ${
+                        isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
+                      }`}
+                    />
+                    <span>{isFavorite ? "Loved" : "Favorites"}</span>
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-semibold text-lg transition-all shadow-lg hover:shadow-2xl bg-gradient-to-r from-emerald-100 via-white to-emerald-50 text-[#047F05] border border-green-200 hover:border-[#047F05]"
+                  >
+                    <Share2 className="h-6 w-6" />
+                    <span>Share</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
