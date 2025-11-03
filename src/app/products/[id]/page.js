@@ -1,5 +1,3 @@
- 
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -11,9 +9,9 @@ import Navbar from "@/app/components/navbar/page";
 import axiosInstance from "@/app/helper/axiosInstance";
 import toast, { Toaster } from "react-hot-toast";
 import Footer from "@/app/components/footer/page";
-import { Heart, Share2 } from "lucide-react";
+import { Heart, Share2, X } from "lucide-react";
 
-const BACKEND_URL = "https://api.mamtahardware.in"; 
+const BACKEND_URL = "https://api.mamtahardware.in";
 
 const ProductDetail = () => {
   const params = useParams();
@@ -26,6 +24,7 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false); // ✅ New state for fullscreen
 
   const isFavorite = favoriteIds.includes(productId);
 
@@ -207,7 +206,10 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex-1">
-              <div className="relative w-full h-96 lg:h-[600px] rounded-2xl overflow-hidden bg-gray-100 shadow-lg">
+              <div
+                className="relative w-full h-96 lg:h-[600px] rounded-2xl overflow-hidden bg-gray-100 shadow-lg cursor-pointer"
+                onClick={() => setIsFullScreen(true)} // ✅ Open fullscreen
+              >
                 <Image
                   src={selectedImage}
                   alt={product.name}
@@ -217,7 +219,10 @@ const ProductDetail = () => {
                   unoptimized
                 />
                 <button
-                  onClick={handleToggleFavorite}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleFavorite();
+                  }}
                   className="absolute top-5 right-6 text-gray-500 hover:text-red-500 transition-transform duration-200"
                 >
                   <Heart
@@ -305,7 +310,29 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
-      <div className="h-20 w-100" ></div>
+
+      {/* ✅ Fullscreen Image Modal */}
+      {isFullScreen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
+          <button
+            onClick={() => setIsFullScreen(false)}
+            className="absolute top-6 right-6 text-white hover:text-gray-300 transition"
+          >
+            <X className="h-10 w-10" />
+          </button>
+          <div className="relative w-full h-full flex items-center justify-center p-6">
+            <Image
+              src={selectedImage}
+              alt={product.name}
+              fill
+              className="object-contain"
+              unoptimized
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="h-20 w-100"></div>
       <Footer />
     </div>
   );
