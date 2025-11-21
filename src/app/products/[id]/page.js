@@ -24,7 +24,8 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false); // ✅ New state for fullscreen
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const isFavorite = favoriteIds.includes(productId);
 
@@ -53,7 +54,37 @@ const ProductDetail = () => {
     if (productId) fetchProduct();
   }, [productId]);
 
+  useEffect(() => {
+    if (!isFullScreen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowRight") handleNextImage();
+      if (e.key === "ArrowLeft") handlePrevImage();
+      if (e.key === "Escape") setIsFullScreen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullScreen, currentImageIndex, product]);
+
   const handleBack = () => router.back();
+
+  const handleNextImage = () => {
+    if (!product) return;
+    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+  };
+
+  const handlePrevImage = () => {
+    if (!product) return;
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + product.images.length) % product.images.length
+    );
+  };
+
+  const getFullScreenImageUrl = () => {
+    if (!product || !product.images[currentImageIndex]) return "";
+    return `${BACKEND_URL}/${product.images[currentImageIndex].replace(/\\/g, "/")}`;
+  };
 
   const handleEarnPoints = async () => {
     if (!product) return;
@@ -208,7 +239,16 @@ const ProductDetail = () => {
             <div className="flex-1">
               <div
                 className="relative w-full h-96 lg:h-[600px] rounded-2xl overflow-hidden bg-gray-100 shadow-lg cursor-pointer"
-                onClick={() => setIsFullScreen(true)} // ✅ Open fullscreen
+                onClick={() => {
+                  setIsFullScreen(true);
+                  setCurrentImageIndex(
+                    product.images.findIndex(
+                      (img) =>
+                        `${BACKEND_URL}/${img.replace(/\\/g, "/")}` ===
+                        selectedImage
+                    ) || 0
+                  );
+                }}
               >
                 <Image
                   src={selectedImage}
@@ -311,23 +351,112 @@ const ProductDetail = () => {
         </div>
       </main>
 
-      {/* ✅ Fullscreen Image Modal */}
+      {/* Fullscreen Image Gallery Modal */}
       {isFullScreen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center">
-          <button
-            onClick={() => setIsFullScreen(false)}
-            className="absolute top-6 right-6 text-white hover:text-gray-300 transition"
-          >
-            <X className="h-10 w-10" />
-          </button>
-          <div className="relative w-full h-full flex items-center justify-center p-6">
-            <Image
-              src={selectedImage}
-              alt={product.name}
-              fill
-              className="object-contain"
-              unoptimized
-            />
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center p-4">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Close Button - Top Right */}
+            <button
+              onClick={() => setIsFullScreen(false)}
+              className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors z-10"
+              aria-label="Close gallery"
+            >
+              <X className="h-10 w-10" />
+            </button>
+
+            {/* Previous Button - Left */}
+            {product?.images.length > 1 && (
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-all hover:scale-110 z-10"
+                aria-label="Previous image"
+              >
+                <svg
+                  className="h-12 w-12"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {/* Image */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Image
+                src={getFullScreenImageUrl()}
+                alt={`${product?.name} - Image ${currentImageIndex + 1}`}
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+
+            {/* Next Button - Right */}
+            {product?.images.length > 1 && (
+              <button
+                onClick={handleNextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 transition-all hover:scale-110 z-10"
+                aria-label="Next image"
+              >
+                <svg
+                  className="h-12 w-12"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {/* Image Counter - Bottom */}
+            {product?.images.length > 1 && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black bg-opacity-60 text-white px-4 py-2 rounded-full text-sm font-semibold z-10">
+                {currentImageIndex + 1} / {product?.images.length}
+              </div>
+            )}
+
+            {/* Thumbnail Navigation - Bottom */}
+            {product?.images.length > 1 && (
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 max-w-2xl overflow-x-auto px-4 z-10">
+                {product?.images.map((img, index) => {
+                  const imgUrl = `${BACKEND_URL}/${img.replace(/\\/g, "/")}`;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex
+                          ? "border-[#047F05] ring-2 ring-green-300"
+                          : "border-gray-500 hover:border-white"
+                      }`}
+                    >
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={imgUrl}
+                          alt={`Thumbnail ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

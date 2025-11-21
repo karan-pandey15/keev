@@ -170,7 +170,7 @@ export default function SunmicaList() {
                     {/* Image Section */}
                     <div className="md:w-48 h-48 md:h-auto flex-shrink-0 bg-gray-100">
                       <img
-                        src={`http://localhost:5000/${item.images[0]}`}
+                        src={`https://api.mamtahardware.in/${item.images[0]}`}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />

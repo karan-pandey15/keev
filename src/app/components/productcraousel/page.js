@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "@/app/helper/axiosInstance";
 import ProductCarousel from "@/app/ristalmica/ProductCrousel";
 import Navbar from "../navbar/page";
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = "https://api.mamtahardware.in";
 
 const ProductCraousel = () => {
   const router = useRouter();

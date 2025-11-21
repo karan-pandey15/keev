@@ -9,7 +9,7 @@ import axiosInstance from "../helper/axiosInstance";
 import Navbar from "../components/navbar/page";
 import { Search, X } from "lucide-react";
 import Footer from "../components/footer/page"; 
-const BACKEND_URL = "http://localhost:50001";
+const BACKEND_URL = "https://api.mamtahardware.in1";
 
 const RistalMica = () => {
   const router = useRouter();
